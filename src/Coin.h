@@ -11,10 +11,10 @@ class Coin
 private:
     sf::CircleShape shape;
 
-    void initShape();
+    void initShape(const sf::RenderWindow& window);
 
 public:
-    Coin();
+    Coin(const sf::RenderWindow* window);
     virtual ~Coin();
 
     // Functions

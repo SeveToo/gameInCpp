@@ -2,6 +2,9 @@
 
 void Game::initVariables() {
     this->endGame = false;
+    this->spawnTimerMax = 10.f;
+    this->spawnTimer = this->spawnTimerMax;
+    this->maxCoins = 10;
 }
 
 void Game::initWindow() {
@@ -27,6 +30,8 @@ const bool Game::running() const
     return this->window->isOpen();
 }
 
+// Functions =====================
+
 void Game::pollEvents()
 {
     while (this->window->pollEvent(this->sfmlEvent)) 
@@ -44,9 +49,28 @@ void Game::pollEvents()
     }
 }
 
+void Game::spawnCoin() 
+{
+    // Timer
+    if (this->spawnTimer < this->spawnTimerMax) 
+    {
+        this->spawnTimer += 1.f;
+    }
+    else 
+    {
+        if (this->coins.size() < this->maxCoins) 
+        {
+            this->coins.push_back(Coin(this->window));
+            this->spawnTimer = 0.f;
+        }
+    }
+}
+
 void Game::update() 
 {
     this->pollEvents();
+
+    this->spawnCoin();
     this->player.update(this->window);
 }
 
@@ -57,7 +81,10 @@ void Game::render()
     // Render stuff
     this->player.render(this->window);
 
+    for(auto i : this->coins)
+    {
+        i.render(this->window);
+    }
+
     this->window->display();
 }
-
-// Functions
