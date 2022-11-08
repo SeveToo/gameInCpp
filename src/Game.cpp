@@ -7,6 +7,7 @@ void Game::initVariables() {
 void Game::initWindow() {
     this->videoMode = sf::VideoMode(800, 600);
     this->window = new sf::RenderWindow(this->videoMode, "Game", sf::Style::Titlebar | sf::Style::Close);
+    this->window->setFramerateLimit(60);
 }
 
 // Constrictor and Destructor
@@ -46,6 +47,7 @@ void Game::pollEvents()
 void Game::update() 
 {
     this->pollEvents();
+    this->player.update(this->window);
 }
 
 void Game::render() 
