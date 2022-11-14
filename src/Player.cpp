@@ -4,6 +4,8 @@
 void Player::initVariables()
 {
     this->movementSpeed = 5.f;
+    this->hpMax = 10;
+    this->hp = hpMax;
 }
 
 void Player::initShape()
@@ -23,10 +25,43 @@ Player::~Player()
 {
 }
 
-void Player::updateInput()
-{
-    
+// Accessors
 
+const sf::RectangleShape & Player::getShape() const
+{
+    return this->shape;
+}
+
+const int & Player::getHp() const {
+    return this->hp;
+}
+
+const int & Player::getHpMax() const {
+    return this->hpMax;
+}
+
+// Functions
+
+void Player::takeDamage(const int demage) {
+    if (this->hp > 0)
+        this->hp -= demage;
+
+    if (this->hp < 0)
+        this->hp = 0;
+}
+
+void Player::gainHealth(const int health) {
+    if(this->hp < this->hpMax)
+        this->hp += health;
+    else
+    this->hpMax += health;
+
+    if (this->hpMax > this->hpMax)
+        this->hpMax = this->hpMax;
+}
+
+void Player::updateInput()
+{   
     // Keyboard input
     // LEFT
     if (sf::Keyboard::isKeyPressed(sf::Keyboard::A))
@@ -41,6 +76,11 @@ void Player::updateInput()
     if (sf::Keyboard::isKeyPressed(sf::Keyboard::S))
         this->shape.move(0.f, this->movementSpeed);
 }
+
+// void Player::updatePoints()
+// {
+//     std::cout<<"text";
+// }
 
 void Player::updateWindowBoundsCollision(const sf::RenderTarget* target)
 {

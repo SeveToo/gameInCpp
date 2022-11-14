@@ -3,6 +3,7 @@
 #include <iostream>
   #include <ctime>
   #include <vector>
+  #include <sstream>
 
   #include "Player.h"
   #include "Coin.h"
@@ -15,6 +16,11 @@ class Game {
     sf::Event sfmlEvent;
 
     Player player;
+    int points;
+
+    sf::Font font;
+    sf::Text guiText;
+    sf::Text endGameText;
 
     std::vector <Coin> coins;
     float spawnTimerMax;
@@ -23,6 +29,8 @@ class Game {
 
     void initVariables();
     void initWindow();
+    void initFonts();
+    void initText();
 
   public: 
     // Constrictor and Destructor
@@ -30,6 +38,7 @@ class Game {
     ~Game();
 
     // Accessors
+    const bool& getEndGame() const;
 
     // Modifiers
 
@@ -38,9 +47,13 @@ class Game {
     void pollEvents();
 
     void spawnCoin();
+    const int randBallType() const;
+    void updatePlayer();
+    void updateCollision();
+    void updateGui();
     void update();
+
+    void renderGui(sf::RenderTarget* target);
     void render();
-
-
 };
 

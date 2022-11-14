@@ -5,6 +5,7 @@ void Game::initVariables() {
     this->spawnTimerMax = 10.f;
     this->spawnTimer = this->spawnTimerMax;
     this->maxCoins = 10;
+    this->points = 0;
 }
 
 void Game::initWindow() {
@@ -13,16 +14,42 @@ void Game::initWindow() {
     this->window->setFramerateLimit(60);
 }
 
+void Game::initFonts() {
+    if (!this->font.loadFromFile("assets/PixellettersFull.ttf")) {
+        throw("Czcionka \"PixellettersFull.ttf\" nie mogła zostać załadowana"); 
+    }
+}
+
+void Game::initText() {
+    // GUI text init
+    this->guiText.setFont(this->font);
+    this->guiText.setFillColor(sf::Color::White);
+    this->guiText.setCharacterSize(32);
+
+    // End game text init
+    this->endGameText.setFont(this->font);
+    this->endGameText.setFillColor(sf::Color::Red);
+    this->endGameText.setCharacterSize(60);
+    this->endGameText.setPosition(sf::Vector2f(20.f, 100.f));
+    this->endGameText.setString("KONIEC GRY");
+}
+
 // Constrictor and Destructor
 Game::Game() 
 {
     this->initVariables();
     this->initWindow();
+    this->initFonts();
+    this->initText();
 }
 
 Game::~Game() 
 {
     delete this->window;
+}
+
+const bool & Game::getEndGame() const {
+    return this->endGame;
 }
 
 const bool Game::running() const 
@@ -49,29 +76,120 @@ void Game::pollEvents()
     }
 }
 
-void Game::spawnCoin() 
+void Game::spawnCoin()
 {
-    // Timer
-    if (this->spawnTimer < this->spawnTimerMax) 
-    {
-        this->spawnTimer += 1.f;
+	//Timer
+	if (this->spawnTimer < this->spawnTimerMax)
+		this->spawnTimer += 1.f;
+	else
+	{
+		if (this->coins.size() < this->maxCoins)
+		{
+			this->coins.push_back(Coin(*this->window, this->randBallType()));
+
+            std::cout << "Coins size: " << this->coins.size() << "\n";
+
+			this->spawnTimer = 0.f;
+		}	
+	}
+}
+
+const int Game::randBallType() const 
+{
+    int type = BallTypes::DEFAULT;
+	
+	int randValue = rand() % 100 + 1;
+	if (randValue > 60 && randValue <= 80)
+		type = BallTypes::DAMAGING;
+	else if (randValue > 80 && randValue <= 100)
+		type = BallTypes::HEALING;
+
+	return type;
+}
+
+void Game::updatePlayer()
+{
+    this->player.update(this->window);
+
+    if(this->player.getHp() <= 0) {
+        this->endGame = true;
     }
-    else 
+}
+
+
+void Game::updateCollision() 
+{
+    // Check the collision
+    for (size_t i = 0; i < this->coins.size(); i++) 
     {
-        if (this->coins.size() < this->maxCoins) 
+        if (this->player.getShape().getGlobalBounds().intersects(this->coins[i].getShape().getGlobalBounds())) 
         {
-            this->coins.push_back(Coin(this->window));
-            this->spawnTimer = 0.f;
+            switch (this->coins[i].getType()) 
+            {
+            case 0:
+                this->points++;
+                break;
+            case 1:
+                this->player.takeDamage(1);
+                break;
+            case 2:
+                this->player.gainHealth(1);
+                break;
+            }
+            
+            // Delete the coin
+            this->coins.erase(this->coins.begin() + i);
+            break;
         }
     }
+    for (size_t i = 0; i < this->coins.size(); i++)
+	{
+		if (this->player.getShape().getGlobalBounds().intersects(this->coins[i].getShape().getGlobalBounds()))
+		{
+			switch (this->coins[i].getType())
+			{
+			case BallTypes::DEFAULT:
+				this->points++;
+				break;
+			case BallTypes::DAMAGING:
+				this->player.takeDamage(1);
+				break;
+			case BallTypes::HEALING:
+				this->player.gainHealth(1);
+				break;
+			}
+
+			//Remove the ball
+			this->coins.erase(this->coins.begin() + i);			
+		}
+	}
+}
+
+void Game::updateGui()
+{
+	std::stringstream ss;
+
+	ss << " - Points: " << this->points << "\n"
+		<< " - Health: " << this->player.getHp() << " / " << this->player.getHpMax() << "\n";
+
+	this->guiText.setString(ss.str());
 }
 
 void Game::update() 
 {
     this->pollEvents();
 
-    this->spawnCoin();
-    this->player.update(this->window);
+    if(!this->endGame) {
+        this->spawnCoin();
+        this->updatePlayer();
+        this->updateCollision();
+        this->updateGui();
+    }
+}
+
+void Game::renderGui(sf::RenderTarget* target)
+{
+	target->draw(this->guiText);
 }
 
 void Game::render() 
@@ -83,7 +201,15 @@ void Game::render()
 
     for(auto i : this->coins)
     {
-        i.render(this->window);
+        i.render(*this->window);
+    }
+
+    // Render GUI
+    this->renderGui(this->window);
+
+    // Render end game text
+    if(this->endGame) {
+        this->window->draw(this->endGameText);
     }
 
     this->window->display();
