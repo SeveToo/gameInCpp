@@ -1,6 +1,9 @@
 #include <bits/stdc++.h>
 #include "Player.h"
 
+sf::Texture pl;
+extern int keyEffect;
+
 void Player::initVariables()
 {
     this->movementSpeed = 5.f;
@@ -10,8 +13,10 @@ void Player::initVariables()
 
 void Player::initShape()
 {
-    this->shape.setFillColor(sf::Color::Green);
-    this->shape.setSize(sf::Vector2f(50.f, 50.f));
+    pl.loadFromFile("assets/player.png");
+    this->shape.setSize(sf::Vector2f(50.f, 100.f));
+    this->shape.setTexture(&pl);
+    
 }
 
 Player::Player(float x, float y)
@@ -59,22 +64,29 @@ void Player::gainHealth(const int health) {
     if (this->hpMax > this->hpMax)
         this->hpMax = this->hpMax;
 }
-
+int16_t move = 0;
 void Player::updateInput()
 {   
     // Keyboard input
+    if (sf::Keyboard::isKeyPressed(sf::Keyboard::X))
+        move = 0;
     // LEFT
     if (sf::Keyboard::isKeyPressed(sf::Keyboard::A))
-        this->shape.move(-this->movementSpeed, 0.f);
+        move = 1;
     // RIGHT
     if (sf::Keyboard::isKeyPressed(sf::Keyboard::D))
-        this->shape.move(this->movementSpeed, 0.f);
+        move = 2;
     // UP
     if (sf::Keyboard::isKeyPressed(sf::Keyboard::W))
-        this->shape.move(0.f, -this->movementSpeed);
+        move = 3;
     // DOWN
     if (sf::Keyboard::isKeyPressed(sf::Keyboard::S))
-        this->shape.move(0.f, this->movementSpeed);
+        move = 4;
+    
+    if(move==1)this->shape.move(-this->movementSpeed, 0.f);
+    if(move==2)this->shape.move(this->movementSpeed, 0.f);
+    if(move==3)this->shape.move(0.f, -this->movementSpeed);
+    if(move==4)this->shape.move(0.f, this->movementSpeed);
 }
 
 // void Player::updatePoints()
@@ -84,22 +96,25 @@ void Player::updateInput()
 
 void Player::updateWindowBoundsCollision(const sf::RenderTarget* target)
 {
-
     // Left
     if (this->shape.getGlobalBounds().left <= 0.f)
-        this->shape.setPosition(0.f, this->shape.getGlobalBounds().top);
+        if(keyEffect>0) this->shape.setPosition(target->getSize().x - this->shape.getGlobalBounds().width-1, this->shape.getGlobalBounds().top);
+        else this->shape.setPosition(0.f, this->shape.getGlobalBounds().top);
 
     // Right
     if (this->shape.getGlobalBounds().left + this->shape.getGlobalBounds().width >= target->getSize().x)
-        this->shape.setPosition(target->getSize().x - this->shape.getGlobalBounds().width, this->shape.getGlobalBounds().top);
+        if(keyEffect>0) this->shape.setPosition(0.f, this->shape.getGlobalBounds().top);
+        else this->shape.setPosition(target->getSize().x - this->shape.getGlobalBounds().width-1, this->shape.getGlobalBounds().top);
 
     // Top
     if (this->shape.getGlobalBounds().top <= 0.f)
-        this->shape.setPosition(this->shape.getGlobalBounds().left, 0.f);
+        if(keyEffect>0) this->shape.setPosition(this->shape.getGlobalBounds().left, target->getSize().y - this->shape.getGlobalBounds().height-1);
+        else this->shape.setPosition(this->shape.getGlobalBounds().left, 0.f);
 
     // Bottom
     if (this->shape.getGlobalBounds().top + this->shape.getGlobalBounds().height >= target->getSize().y)
-        this->shape.setPosition(this->shape.getGlobalBounds().left, target->getSize().y - this->shape.getGlobalBounds().height);
+        if(keyEffect>0) this->shape.setPosition(this->shape.getGlobalBounds().left, 0.f);
+        else this->shape.setPosition(this->shape.getGlobalBounds().left, target->getSize().y - this->shape.getGlobalBounds().height-1);
 
 }
 

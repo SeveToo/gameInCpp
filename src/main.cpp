@@ -6,7 +6,7 @@
 int main() {
     // initialize random seed
     srand(static_cast<unsigned>(time(0)));
-
+    assets();
     // initialize game object
     Game game;
 

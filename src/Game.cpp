@@ -1,6 +1,14 @@
 #include "Game.h"
 
+sf::Color theme = sf::Color(rand() % 255 + 1, rand() % 255 + 1, rand() % 255 + 1);
+sf::Color black  = sf::Color(0,0,0);
+sf::RectangleShape top;
+int keyEffect = 0;
+
 void Game::initVariables() {
+    top.setFillColor(theme);
+    top.setSize(sf::Vector2f(780,580));
+    top.setPosition(sf::Vector2f(10,10));
     this->endGame = false;
     this->spawnTimerMax = 10.f;
     this->spawnTimer = this->spawnTimerMax;
@@ -99,6 +107,8 @@ const int Game::randBallType() const
     int type = BallTypes::DEFAULT;
 	
 	int randValue = rand() % 100 + 1;
+	if (randValue > 50 && randValue <= 60)
+        type = BallTypes::KEY;
 	if (randValue > 60 && randValue <= 80)
 		type = BallTypes::DAMAGING;
 	else if (randValue > 80 && randValue <= 100)
@@ -128,12 +138,16 @@ void Game::updateCollision()
             {
             case 0:
                 this->points++;
+                theme = sf::Color(rand() % 255 + 1, rand() % 255 + 1, rand() % 255 + 1);
                 break;
             case 1:
                 this->player.takeDamage(1);
                 break;
             case 2:
                 this->player.gainHealth(1);
+                break;
+            case 3:
+                keyEffect = 500;
                 break;
             }
             
@@ -170,7 +184,8 @@ void Game::updateGui()
 	std::stringstream ss;
 
 	ss << " - Points: " << this->points << "\n"
-		<< " - Health: " << this->player.getHp() << " / " << this->player.getHpMax() << "\n";
+		<< " - Health: " << this->player.getHp() << " / " << this->player.getHpMax() << "\n"
+		<< " - Key Effect: " << keyEffect << "\n";
 
 	this->guiText.setString(ss.str());
 }
@@ -194,7 +209,20 @@ void Game::renderGui(sf::RenderTarget* target)
 
 void Game::render() 
 {
-    this->window->clear();
+    
+    if(keyEffect>0){
+        keyEffect--;
+        this->window->clear(theme);
+        this->window->draw(top);
+        top.setFillColor(theme);
+    }else{
+        this->window->clear(black);
+        this->window->draw(top);
+        top.setFillColor(theme);
+    }
+
+    
+
 
     // Render stuff
     this->player.render(this->window);

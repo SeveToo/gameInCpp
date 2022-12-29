@@ -6,8 +6,8 @@
 #include <SFML/Audio.hpp>
 #include <SFML/Network.hpp>
 
-enum BallTypes { DEFAULT=0, DAMAGING, HEALING, NROFTYPES };
-
+enum BallTypes { DEFAULT=0, DAMAGING, HEALING, KEY ,NROFTYPES };
+void assets();
 class Coin
 {
 private:
